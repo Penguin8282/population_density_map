@@ -22,6 +22,7 @@ const state = {
   activeClass: null, // 범례 클릭 필터: null=전체, 0..K-1=해당 구간, -1=통계없음
   selectedDong: null, // 검색으로 선택된 읍면동 키
   dongBounds: {},   // 읍면동 키 → L.latLngBounds (검색 flyTo 용)
+  densityRange: null, // [lo, hi] 밀도 범위 필터 (null=전체)
 };
 
 // "시도 시군구 읍면동" 형태의 검색/식별 키 (동명 중복을 시군구로 구분)
@@ -94,6 +95,13 @@ function gridStyle(feature) {
   } else {
     // 그 외: 흐리게
     s.fillOpacity = 0.06;
+  }
+  // [작업 4] 밀도 범위 슬라이더: 선택 범위 밖 격자는 반투명
+  if (cls >= 0 && state.densityRange) {
+    const d = feature.properties.density;
+    if (d < state.densityRange[0] || d > state.densityRange[1]) {
+      s.fillOpacity = Math.min(s.fillOpacity, 0.08);
+    }
   }
   // [작업 3] 검색으로 선택된 읍면동: 테두리 강조
   if (state.selectedDong && dongKey(feature.properties) === state.selectedDong) {
@@ -189,6 +197,46 @@ function buildSearch() {
   });
 }
 
+// ---- 밀도 범위 필터 (작업 4 · 네이티브 이중 슬라이더) --------------------
+function buildRangeFilter() {
+  const dmin = Math.floor(state.breaks[0]);
+  const dmax = Math.ceil(state.breaks[K]);
+  const step = Math.max(1, Math.round((dmax - dmin) / 1000));
+  const rmin = document.getElementById("range-min");
+  const rmax = document.getElementById("range-max");
+  [rmin, rmax].forEach((r) => { r.min = dmin; r.max = dmax; r.step = step; });
+  rmin.value = dmin;
+  rmax.value = dmax;
+
+  function paintFill(lo, hi) {
+    const l = ((lo - dmin) / (dmax - dmin)) * 100;
+    const r = ((hi - dmin) / (dmax - dmin)) * 100;
+    const fill = document.getElementById("range-fill");
+    fill.style.left = l + "%";
+    fill.style.width = (r - l) + "%";
+  }
+
+  function update() {
+    let lo = +rmin.value;
+    let hi = +rmax.value;
+    if (lo > hi) {
+      // 두 핸들 교차 방지: 방금 움직인 핸들을 상대에 맞춤
+      if (document.activeElement === rmin) { lo = hi; rmin.value = lo; }
+      else { hi = lo; rmax.value = hi; }
+    }
+    // 전체 범위면 필터 해제(null)
+    state.densityRange = (lo <= dmin && hi >= dmax) ? null : [lo, hi];
+    document.getElementById("range-readout").textContent = `${fmt(lo)} – ${fmt(hi)}`;
+    paintFill(lo, hi);
+    state.gridLayer.setStyle(gridStyle);
+  }
+
+  rmin.addEventListener("input", update);
+  rmax.addEventListener("input", update);
+  document.getElementById("range-readout").textContent = `${fmt(dmin)} – ${fmt(dmax)}`;
+  paintFill(dmin, dmax);
+}
+
 // ---- 데이터 로드 & 렌더 --------------------------------------------------
 fetch(DATA_URL)
   .then((r) => r.json())
@@ -217,6 +265,7 @@ fetch(DATA_URL)
     map.fitBounds(state.gridLayer.getBounds());
     buildLegend();
     buildSearch();
+    buildRangeFilter();
   })
   .catch((err) => {
     console.error("데이터 로드 실패:", err);
