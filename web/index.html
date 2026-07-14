@@ -27,6 +27,18 @@
   <!-- 범례 (작업 1에서 클릭 필터 추가) -->
   <div id="legend" class="panel" aria-label="인구밀도 범례">
     <div class="panel-title">인구밀도 (명/㎢)</div>
+
+    <!-- 색상 분류 방식 토글 (작업 5) -->
+    <div id="class-toggle">
+      <button type="button" data-method="quantile" class="active"
+              title="분위수: 각 구간에 들어가는 격자 수가 비슷하도록 경계를 나눔">분위수</button>
+      <button type="button" data-method="equal"
+              title="등간격: 밀도 범위(최소~최대)를 같은 폭으로 나눔">등간격</button>
+      <button type="button" data-method="log"
+              title="로그: 로그 스케일로 나눔 — 값이 한쪽에 몰린 데이터에 적합">로그</button>
+      <span class="info-icon" tabindex="0" title="분위수 · 각 구간 격자 수가 비슷하게 나뉨&#10;등간격 · 밀도 범위를 균등한 폭으로 나눔&#10;로그 · 로그 스케일(편중 데이터에 적합)">?</span>
+    </div>
+
     <div id="legend-items"></div>
     <div class="panel-hint">구간 클릭 → 해당 격자만 강조</div>
 
