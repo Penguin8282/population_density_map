@@ -25,6 +25,11 @@ html, body {
   margin-bottom: 8px;
   font-size: 13px;
 }
+.panel-hint {
+  margin-top: 6px;
+  font-size: 11px;
+  color: #777;
+}
 
 /* 범례: 우상단 */
 #legend {
@@ -39,6 +44,20 @@ html, body {
   padding: 3px 4px;
   border-radius: 4px;
   line-height: 1.4;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.12s, opacity 0.12s;
+}
+.legend-row:hover {
+  background: #eef2f7;
+}
+.legend-row.active {
+  background: #dbe7f5;
+  outline: 2px solid #1f78b4;
+  font-weight: 700;
+}
+.legend-row.dimmed {
+  opacity: 0.45;
 }
 .legend-swatch {
   width: 18px;
