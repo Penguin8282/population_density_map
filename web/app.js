@@ -20,7 +20,14 @@ const state = {
   breaks: [],       // 분위수 경계 (길이 K+1)
   gridLayer: null,  // 격자 GeoJSON 레이어
   activeClass: null, // 범례 클릭 필터: null=전체, 0..K-1=해당 구간, -1=통계없음
+  selectedDong: null, // 검색으로 선택된 읍면동 키
+  dongBounds: {},   // 읍면동 키 → L.latLngBounds (검색 flyTo 용)
 };
+
+// "시도 시군구 읍면동" 형태의 검색/식별 키 (동명 중복을 시군구로 구분)
+function dongKey(p) {
+  return [p.sido, p.sigungu, p.eupmyeondong].filter(Boolean).join(" ");
+}
 
 // ---- 지도 초기화 ---------------------------------------------------------
 // [작업 2] 렌더러: SVG → Canvas 로 전환하여 대량 폴리곤 성능 개선
@@ -88,6 +95,12 @@ function gridStyle(feature) {
     // 그 외: 흐리게
     s.fillOpacity = 0.06;
   }
+  // [작업 3] 검색으로 선택된 읍면동: 테두리 강조
+  if (state.selectedDong && dongKey(feature.properties) === state.selectedDong) {
+    s.color = "#0050b3";
+    s.weight = 2;
+    s.fillOpacity = Math.max(s.fillOpacity, 0.85);
+  }
   return s;
 }
 
@@ -145,6 +158,37 @@ function markActiveLegend() {
   });
 }
 
+// ---- 읍면동 검색 (작업 3) ------------------------------------------------
+function buildSearch() {
+  const keys = Object.keys(state.dongBounds).sort();
+  const dl = document.getElementById("dong-list");
+  dl.innerHTML = keys.map((k) => `<option value="${k}"></option>`).join("");
+
+  const input = document.getElementById("search-input");
+  const clear = document.getElementById("search-clear");
+
+  function selectDong(val) {
+    // 정확 일치 우선, 없으면 부분 일치(첫 후보)
+    let key = state.dongBounds[val] ? val : null;
+    if (!key) {
+      const q = val.trim();
+      key = keys.find((k) => k.includes(q)) || null;
+    }
+    if (!key) return; // 후보 없음: 무시
+    state.selectedDong = key;
+    state.gridLayer.setStyle(gridStyle);
+    map.flyToBounds(state.dongBounds[key], { maxZoom: 14, padding: [40, 40] });
+  }
+
+  input.addEventListener("change", () => selectDong(input.value));
+  input.addEventListener("keydown", (e) => { if (e.key === "Enter") selectDong(input.value); });
+  clear.addEventListener("click", () => {
+    input.value = "";
+    state.selectedDong = null;
+    state.gridLayer.setStyle(gridStyle);
+  });
+}
+
 // ---- 데이터 로드 & 렌더 --------------------------------------------------
 fetch(DATA_URL)
   .then((r) => r.json())
@@ -159,11 +203,20 @@ fetch(DATA_URL)
       style: gridStyle,
       onEachFeature: (feature, layer) => {
         layer.bindTooltip(tooltipHtml(feature.properties), { sticky: true });
+        // [작업 3] 읍면동별 경계(bounds) 인덱스 구축 (검색 flyTo 용)
+        const p = feature.properties;
+        if (p.eupmyeondong && p.eupmyeondong !== "(행정동 미상)") {
+          const key = dongKey(p);
+          const lb = layer.getBounds();
+          if (!state.dongBounds[key]) state.dongBounds[key] = L.latLngBounds(lb.getSouthWest(), lb.getNorthEast());
+          else state.dongBounds[key].extend(lb);
+        }
       },
     }).addTo(map);
 
     map.fitBounds(state.gridLayer.getBounds());
     buildLegend();
+    buildSearch();
   })
   .catch((err) => {
     console.error("데이터 로드 실패:", err);
