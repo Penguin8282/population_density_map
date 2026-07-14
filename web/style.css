@@ -1,0 +1,62 @@
+/* ===== 수도권 1km 격자 인구밀도 지도 — 스타일 ===== */
+html, body {
+  margin: 0;
+  height: 100%;
+  font-family: "Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+}
+#map {
+  position: absolute;
+  inset: 0;
+}
+
+/* 공통 패널 (범례/검색/슬라이더 등) */
+.panel {
+  position: absolute;
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 8px;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.3);
+  padding: 10px 12px;
+  font-size: 13px;
+  color: #222;
+}
+.panel-title {
+  font-weight: 700;
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+
+/* 범례: 우상단 */
+#legend {
+  top: 12px;
+  right: 12px;
+  max-width: 220px;
+}
+.legend-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 4px;
+  border-radius: 4px;
+  line-height: 1.4;
+}
+.legend-swatch {
+  width: 18px;
+  height: 18px;
+  border-radius: 3px;
+  flex: 0 0 auto;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+}
+.legend-label {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 툴팁 */
+.grid-tooltip {
+  font-size: 12px;
+  line-height: 1.5;
+}
+.grid-tooltip b {
+  color: #b10026;
+}

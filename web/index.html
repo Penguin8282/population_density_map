@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <!-- 모바일 대응: 초기 스케일 고정 (작업 7에서 재점검) -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <title>수도권 1km 격자 인구밀도 지도</title>
+
+  <!-- Leaflet (자체 호스팅 = 유일한 외부 라이브러리, CDN 의존 없음) -->
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css" />
+  <script src="vendor/leaflet/leaflet.js"></script>
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="map"></div>
+
+  <!-- 범례 (작업 1에서 클릭 필터 추가) -->
+  <div id="legend" class="panel" aria-label="인구밀도 범례">
+    <div class="panel-title">인구밀도 (명/㎢)</div>
+    <div id="legend-items"></div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
