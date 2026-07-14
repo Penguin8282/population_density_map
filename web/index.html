@@ -29,6 +29,18 @@
     <div class="panel-title">인구밀도 (명/㎢)</div>
     <div id="legend-items"></div>
     <div class="panel-hint">구간 클릭 → 해당 격자만 강조</div>
+
+    <!-- 밀도 범위 필터 (작업 4 · 네이티브 이중 슬라이더) -->
+    <div id="range-filter">
+      <div class="range-title">밀도 범위 필터 (명/㎢)</div>
+      <div class="range-wrap">
+        <div class="range-track"></div>
+        <div class="range-track-fill" id="range-fill"></div>
+        <input type="range" id="range-min" />
+        <input type="range" id="range-max" />
+      </div>
+      <div id="range-readout"></div>
+    </div>
   </div>
 
   <script src="app.js"></script>

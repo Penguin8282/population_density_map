@@ -100,6 +100,83 @@ html, body {
   font-variant-numeric: tabular-nums;
 }
 
+/* 밀도 범위 필터 (이중 슬라이더) */
+#range-filter {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid #e2e2e2;
+}
+.range-title {
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+.range-wrap {
+  position: relative;
+  height: 20px;
+  margin: 0 8px;
+}
+.range-track {
+  position: absolute;
+  top: 9px;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: #d5d5d5;
+  border-radius: 2px;
+}
+.range-track-fill {
+  position: absolute;
+  top: 9px;
+  height: 3px;
+  background: #1f78b4;
+  border-radius: 2px;
+}
+/* 두 range input 을 겹쳐 이중 핸들 구현 (트랙은 통과, 핸들만 조작) */
+.range-wrap input[type="range"] {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 20px;
+  margin: 0;
+  background: none;
+  -webkit-appearance: none;
+  appearance: none;
+  pointer-events: none;
+}
+.range-wrap input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  pointer-events: auto;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: #1f78b4;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+}
+.range-wrap input[type="range"]::-moz-range-thumb {
+  pointer-events: auto;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: #1f78b4;
+  border: 2px solid #fff;
+  cursor: pointer;
+}
+.range-wrap input[type="range"]::-moz-range-track {
+  background: none;
+}
+#range-readout {
+  margin-top: 8px;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  color: #333;
+}
+
 /* 툴팁 */
 .grid-tooltip {
   font-size: 12px;
