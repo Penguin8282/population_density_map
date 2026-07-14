@@ -17,8 +17,9 @@ const NODATA_COLOR = "#d9d9d9";
 
 // ---- 전역 상태 -----------------------------------------------------------
 const state = {
-  breaks: [],      // 분위수 경계 (길이 K+1)
-  gridLayer: null, // 격자 GeoJSON 레이어
+  breaks: [],       // 분위수 경계 (길이 K+1)
+  gridLayer: null,  // 격자 GeoJSON 레이어
+  activeClass: null, // 범례 클릭 필터: null=전체, 0..K-1=해당 구간, -1=통계없음
 };
 
 // ---- 지도 초기화 ---------------------------------------------------------
@@ -63,16 +64,30 @@ function colorOf(density) {
   return c < 0 ? NODATA_COLOR : COLORS[c];
 }
 
-// ---- 격자 스타일 ---------------------------------------------------------
-function baseStyle(feature) {
-  const d = feature.properties.density;
-  const nodata = classOf(d) < 0;
-  return {
-    fillColor: colorOf(d),
-    color: "#00000022",
-    weight: 0.3,
-    fillOpacity: nodata ? 0.35 : 0.75,
-  };
+// ---- 격자 스타일 (범례 클릭 필터 반영) ----------------------------------
+function gridStyle(feature) {
+  const cls = classOf(feature.properties.density);
+  const s = { fillColor: colorOf(feature.properties.density), color: "#00000022", weight: 0.3 };
+  if (state.activeClass === null) {
+    // 필터 없음: 기본 표시
+    s.fillOpacity = cls < 0 ? 0.35 : 0.75;
+  } else if (cls === state.activeClass) {
+    // 선택 구간: 강조 (진하게 + 테두리)
+    s.fillOpacity = 0.9;
+    s.color = "#333333";
+    s.weight = 0.6;
+  } else {
+    // 그 외: 흐리게
+    s.fillOpacity = 0.06;
+  }
+  return s;
+}
+
+// 범례 클릭 → 해당 구간만 강조 (같은 구간 다시 클릭 시 해제)
+function setActiveClass(cls) {
+  state.activeClass = state.activeClass === cls ? null : cls;
+  if (state.gridLayer) state.gridLayer.setStyle(gridStyle);
+  markActiveLegend();
 }
 
 // ---- 툴팁 (hover) --------------------------------------------------------
@@ -90,25 +105,36 @@ function tooltipHtml(p) {
 function fmt(n) {
   return Math.round(n).toLocaleString();
 }
+function addLegendRow(box, cls, color, label) {
+  const row = document.createElement("div");
+  row.className = "legend-row";
+  row.dataset.cls = String(cls);
+  row.title = "클릭 시 이 구간만 강조 (다시 클릭하면 해제)";
+  row.innerHTML =
+    `<span class="legend-swatch" style="background:${color}"></span>` +
+    `<span class="legend-label">${label}</span>`;
+  row.addEventListener("click", () => setActiveClass(cls));
+  box.appendChild(row);
+}
+
 function buildLegend() {
   const box = document.getElementById("legend-items");
   box.innerHTML = "";
+  // 위에서부터 높은 밀도 → 낮은 밀도
   for (let i = K - 1; i >= 0; i--) {
-    // 위에서부터 높은 밀도 → 낮은 밀도
-    const row = document.createElement("div");
-    row.className = "legend-row";
-    row.innerHTML =
-      `<span class="legend-swatch" style="background:${COLORS[i]}"></span>` +
-      `<span class="legend-label">${fmt(state.breaks[i])} – ${fmt(state.breaks[i + 1])}</span>`;
-    box.appendChild(row);
+    addLegendRow(box, i, COLORS[i], `${fmt(state.breaks[i])} – ${fmt(state.breaks[i + 1])}`);
   }
-  // 결측 항목
-  const row = document.createElement("div");
-  row.className = "legend-row";
-  row.innerHTML =
-    `<span class="legend-swatch" style="background:${NODATA_COLOR}"></span>` +
-    `<span class="legend-label">통계없음</span>`;
-  box.appendChild(row);
+  addLegendRow(box, -1, NODATA_COLOR, "통계없음");
+  markActiveLegend();
+}
+
+// 활성 구간 행에 표시(active 클래스) 부여
+function markActiveLegend() {
+  document.querySelectorAll("#legend-items .legend-row").forEach((row) => {
+    const isActive = state.activeClass !== null && Number(row.dataset.cls) === state.activeClass;
+    row.classList.toggle("active", isActive);
+    row.classList.toggle("dimmed", state.activeClass !== null && !isActive);
+  });
 }
 
 // ---- 데이터 로드 & 렌더 --------------------------------------------------
@@ -122,7 +148,7 @@ fetch(DATA_URL)
     console.log("7단계 분위수 경계:", state.breaks.map((b) => Math.round(b)));
 
     state.gridLayer = L.geoJSON(geojson, {
-      style: baseStyle,
+      style: gridStyle,
       onEachFeature: (feature, layer) => {
         layer.bindTooltip(tooltipHtml(feature.properties), { sticky: true });
       },
