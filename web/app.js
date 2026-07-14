@@ -23,6 +23,8 @@ const state = {
   selectedDong: null, // 검색으로 선택된 읍면동 키
   dongBounds: {},   // 읍면동 키 → L.latLngBounds (검색 flyTo 용)
   densityRange: null, // [lo, hi] 밀도 범위 필터 (null=전체)
+  method: "quantile", // 색상 분류 방식: quantile | equal | log
+  densities: [],      // 결측 제외 밀도 값 배열
 };
 
 // "시도 시군구 읍면동" 형태의 검색/식별 키 (동명 중복을 시군구로 구분)
@@ -53,7 +55,7 @@ L.tileLayer(
   }
 ).addTo(map);
 
-// ---- 분류: 7단계 분위수 경계 계산 ---------------------------------------
+// ---- 분류: 3가지 방식으로 K단계 경계 계산 (작업 5) -----------------------
 function quantileBreaks(values, k) {
   const s = values.slice().sort((a, b) => a - b);
   const breaks = [s[0]];
@@ -62,6 +64,29 @@ function quantileBreaks(values, k) {
   }
   breaks.push(s[s.length - 1]);
   return breaks; // 길이 k+1
+}
+
+// 분류 방식별 경계값 배열(길이 K+1) 계산
+function computeBreaks(method, values, k) {
+  const dmin = Math.min(...values);
+  const dmax = Math.max(...values);
+  if (method === "equal") {
+    // 등간격: [min,max]를 균등 폭으로 분할
+    const b = [];
+    for (let i = 0; i <= k; i++) b.push(dmin + ((dmax - dmin) * i) / k);
+    return b;
+  }
+  if (method === "log") {
+    // 로그: 최소 양수~최대를 로그 스케일로 분할 (0 은 첫 구간에 포함)
+    const lo = Math.max(values.filter((x) => x > 0).reduce((a, b) => Math.min(a, b), Infinity), 1);
+    const b = [dmin];
+    for (let i = 1; i <= k; i++) {
+      b.push(Math.exp(Math.log(lo) + ((Math.log(dmax) - Math.log(lo)) * (i - 1)) / (k - 1)));
+    }
+    return b;
+  }
+  // 기본: 분위수
+  return quantileBreaks(values, k);
 }
 
 // 밀도 → 클래스 인덱스(0..K-1). 결측(null/undefined)은 -1.
@@ -197,6 +222,24 @@ function buildSearch() {
   });
 }
 
+// ---- 색상 분류 방식 토글 (작업 5) ----------------------------------------
+function buildClassToggle() {
+  const buttons = document.querySelectorAll("#class-toggle button[data-method]");
+  buttons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const method = btn.dataset.method;
+      if (method === state.method) return;
+      state.method = method;
+      state.breaks = computeBreaks(method, state.densities, K);
+      state.activeClass = null; // 경계가 바뀌므로 범례 필터 해제
+      buttons.forEach((b) => b.classList.toggle("active", b === btn));
+      buildLegend();                        // 범례 갱신
+      state.gridLayer.setStyle(gridStyle);  // 격자 색상 갱신
+      console.log(`분류=${method} 경계:`, state.breaks.map((b) => Math.round(b)));
+    });
+  });
+}
+
 // ---- 밀도 범위 필터 (작업 4 · 네이티브 이중 슬라이더) --------------------
 function buildRangeFilter() {
   const dmin = Math.floor(state.breaks[0]);
@@ -241,11 +284,11 @@ function buildRangeFilter() {
 fetch(DATA_URL)
   .then((r) => r.json())
   .then((geojson) => {
-    const densities = geojson.features
+    state.densities = geojson.features
       .map((f) => f.properties.density)
       .filter((d) => d !== null && d !== undefined && !Number.isNaN(d));
-    state.breaks = quantileBreaks(densities, K);
-    console.log("7단계 분위수 경계:", state.breaks.map((b) => Math.round(b)));
+    state.breaks = computeBreaks(state.method, state.densities, K);
+    console.log("초기 경계(분위수):", state.breaks.map((b) => Math.round(b)));
 
     state.gridLayer = L.geoJSON(geojson, {
       style: gridStyle,
@@ -266,6 +309,7 @@ fetch(DATA_URL)
     buildLegend();
     buildSearch();
     buildRangeFilter();
+    buildClassToggle();
   })
   .catch((err) => {
     console.error("데이터 로드 실패:", err);
