@@ -3,6 +3,27 @@
 서울·인천·경기 **국토통계지도 1km 격자 인구** 셰이프파일을 병합하여
 인구밀도가 포함된 GeoPackage 를 생성하는 파이프라인.
 
+## GitHub에서 바로 실행하기 (PC 설치 없이)
+
+데모용 원본 ZIP 3개가 `data/raw/` 에 포함되어 있어, 아래 두 방법으로 웹에서 바로 돌릴 수 있습니다.
+
+### ① GitHub Actions — 버튼 클릭 → 결과물 다운로드
+1. 저장소 상단 **Actions** 탭 → 왼쪽 **build-population-gpkg** 선택
+2. 오른쪽 **Run workflow ▾ → Run workflow** 클릭
+3. 실행이 끝나면 해당 실행 페이지 하단 **Artifacts** 에서 `population-density-outputs`
+   (GeoPackage + 인구밀도 지도 PNG) 다운로드
+   - `main` 에 코드/데이터가 바뀌면 자동으로도 실행됩니다.
+
+### ② Codespaces — 브라우저 터미널에서 직접 실행
+1. 저장소 상단 **Code ▾ → Codespaces → Create codespace on main**
+2. 환경이 자동 구성되면(`.devcontainer` 로 의존성 설치) 터미널에서:
+   ```bash
+   python src/build_population_gpkg.py \
+     --zip data/raw/seoul_1km_202410.zip data/raw/incheon_1km_202410.zip data/raw/gyeonggi_1km_202410.zip \
+     --out data/processed/out.gpkg
+   python scripts/plot_density.py   # density_map.png 생성
+   ```
+
 ## 구성
 
 ```
