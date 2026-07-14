@@ -43,14 +43,19 @@ else:
 c = g.geometry.union_all().centroid
 m = folium.Map(location=[c.y, c.x], zoom_start=10, tiles="CartoDB positron")
 
-# 인구밀도 색상 (분위수 기반 단계 색상, OrRd)
+# 인구밀도 색상: 데이터 분포 기반 7단계 분위수 + 고대비 팔레트(YlOrRd)
+import mapclassify
 vals = g["density"].dropna()
-breaks = [0, 13, 41, 85, 154, 342, 4708, float(vals.max())]
+K = 7
+bins = list(mapclassify.Quantiles(vals, k=K).bins)  # 각 구간 상한 7개 (마지막=최댓값)
+breaks = [float(vals.min())] + [float(b) for b in bins]  # 색상 7개 → 경계 8개
+# 노랑 → 주황 → 빨강 → 진한 빨강 (7단계가 눈으로 명확히 구분되는 팔레트)
+COLORS7 = ["#ffffb2", "#fed976", "#feb24c", "#fd8d3c", "#fc4e2a", "#e31a1c", "#b10026"]
 colormap = cm.StepColormap(
-    ["#fff5eb", "#fee6ce", "#fdd0a2", "#fdae6b", "#fd8d3c", "#f16913", "#7f2704"],
-    index=breaks, vmin=0, vmax=vals.max(),
-    caption="인구밀도 (명/㎢)",
+    COLORS7, index=breaks, vmin=breaks[0], vmax=breaks[-1],
+    caption="인구밀도 (명/㎢) — 7단계 분위수",
 )
+print("7단계 경계:", [round(b) for b in breaks])
 
 def style_fn(feat):
     d = feat["properties"]["density"]
