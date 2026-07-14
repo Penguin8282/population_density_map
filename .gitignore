@@ -11,9 +11,13 @@ data/raw/extracted/
 # 생성되는 지도 이미지 / 웹 지도 / 다운로드 경계데이터
 density_map.png
 scratch_density_map.png
+scratch_*.png
 interactive_map.html
 public/
 data/raw/hangjeongdong*.geojson
+
+# 프론트엔드용 정적 GeoJSON 은 파이프라인이 생성(커밋하지 않음)
+web/data/*.geojson
 
 # Python
 __pycache__/
