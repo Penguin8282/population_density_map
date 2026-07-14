@@ -8,9 +8,12 @@ data/raw/extracted/
 # data/raw/*
 # !data/raw/.gitkeep
 
-# 생성되는 지도 이미지
+# 생성되는 지도 이미지 / 웹 지도 / 다운로드 경계데이터
 density_map.png
 scratch_density_map.png
+interactive_map.html
+public/
+data/raw/hangjeongdong*.geojson
 
 # Python
 __pycache__/

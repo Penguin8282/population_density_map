@@ -12,6 +12,17 @@ on:
       - "requirements.txt"
       - ".github/workflows/build.yml"
 
+# GitHub Pages 배포에 필요한 권한
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 동시 배포 1개로 제한
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -46,8 +57,16 @@ jobs:
                   data/raw/gyeonggi_1km_202410.zip \
             --out data/processed/seoul_incheon_gyeonggi_1km_pop.gpkg
 
+      - name: "[3단계] 행정명(시도·시군구·읍면동) 결합"
+        run: python scripts/add_admin_names.py
+
       - name: "인구밀도 지도 렌더링(PNG)"
         run: python scripts/plot_density.py
+
+      - name: "인터랙티브 웹 지도 생성(public/index.html)"
+        run: |
+          mkdir -p public
+          OUT=public/index.html python scripts/make_interactive_map.py
 
       - name: 결과물 업로드 (Artifacts)
         uses: actions/upload-artifact@v4
@@ -56,4 +75,26 @@ jobs:
           path: |
             data/processed/*.gpkg
             density_map.png
+            public/index.html
           if-no-files-found: error
+
+      - name: Pages 설정
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - name: Pages 아티팩트 업로드
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: GitHub Pages 배포
+        id: deployment
+        uses: actions/deploy-pages@v4
