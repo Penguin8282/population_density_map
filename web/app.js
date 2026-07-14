@@ -351,7 +351,10 @@ fetch(DATA_URL)
     state.gridLayer = L.geoJSON(geojson, {
       style: gridStyle,
       onEachFeature: (feature, layer) => {
+        // 데스크톱: hover 툴팁
         layer.bindTooltip(tooltipHtml(feature.properties), { sticky: true });
+        // [작업 7] 모바일: 터치엔 hover 가 없으므로 tap → 팝업으로 대체
+        layer.bindPopup(tooltipHtml(feature.properties));
         // [작업 3] 읍면동별 경계(bounds) 인덱스 구축 (검색 flyTo 용)
         const p = feature.properties;
         if (p.eupmyeondong && p.eupmyeondong !== "(행정동 미상)") {

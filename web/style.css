@@ -225,3 +225,43 @@ html, body {
 .grid-tooltip b {
   color: #b10026;
 }
+
+/* ===== 모바일 대응 (작업 7) ===== */
+@media (max-width: 600px) {
+  .panel {
+    font-size: 12px;
+    padding: 8px 10px;
+  }
+  /* 검색: 상단 가로 전체 (줌 버튼 피해 왼쪽 여백) */
+  #search-panel {
+    left: 8px;
+    right: 8px;
+    top: 8px;
+    padding-left: 48px; /* 줌 +/- 버튼과 겹침 방지 */
+  }
+  #search-input {
+    flex: 1;
+    width: auto;
+    min-width: 0;
+  }
+  /* 범례: 검색창 아래로 내려 겹침 방지 + 화면 넘치면 스크롤 */
+  #legend {
+    top: 60px;
+    right: 8px;
+    max-width: 190px;
+    max-height: 62vh;
+    overflow-y: auto;
+  }
+  .legend-swatch {
+    width: 15px;
+    height: 15px;
+  }
+  #class-toggle button {
+    padding: 3px 4px;
+    font-size: 11px;
+  }
+  /* 레이어 컨트롤이 커지지 않도록 */
+  .leaflet-control-layers {
+    font-size: 12px;
+  }
+}
