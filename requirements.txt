@@ -1,4 +1,9 @@
+# 파이프라인 핵심
 geopandas>=1.0
 pyogrio>=0.8
 shapely>=2.0
 pandas>=2.0
+
+# 시각화 (scripts/plot_density.py 용)
+matplotlib>=3.7
+mapclassify>=2.5

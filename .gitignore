@@ -1,8 +1,16 @@
-# 원본/중간/결과 데이터는 버전관리에서 제외 (디렉터리 구조만 유지)
-data/raw/*
+# 결과/중간 산출물은 버전관리에서 제외 (디렉터리 구조만 유지)
 data/processed/*
-!data/raw/.gitkeep
 !data/processed/.gitkeep
+data/raw/extracted/
+
+# 원본 격자 ZIP 은 GitHub Actions/Codespaces 데모용으로 저장소에 포함한다.
+# (제외하려면 아래 두 줄 주석 해제)
+# data/raw/*
+# !data/raw/.gitkeep
+
+# 생성되는 지도 이미지
+density_map.png
+scratch_density_map.png
 
 # Python
 __pycache__/
