@@ -15,6 +15,15 @@
 <body>
   <div id="map"></div>
 
+  <!-- 읍면동 검색 (좌상단) -->
+  <div id="search-panel" class="panel">
+    <div class="panel-title">읍면동 검색</div>
+    <input id="search-input" type="search" list="dong-list"
+           placeholder="예: 역삼동, 분당구 정자동" autocomplete="off" />
+    <datalist id="dong-list"></datalist>
+    <button id="search-clear" type="button" title="선택 해제">✕</button>
+  </div>
+
   <!-- 범례 (작업 1에서 클릭 필터 추가) -->
   <div id="legend" class="panel" aria-label="인구밀도 범례">
     <div class="panel-title">인구밀도 (명/㎢)</div>
