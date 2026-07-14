@@ -23,7 +23,15 @@ const state = {
 };
 
 // ---- 지도 초기화 ---------------------------------------------------------
-const map = L.map("map", { preferCanvas: false }); // 작업 0: SVG 렌더러
+// [작업 2] 렌더러: SVG → Canvas 로 전환하여 대량 폴리곤 성능 개선
+//  · 변경 전(SVG, Leaflet 기본): 폴리곤 1개당 <path> DOM 노드가 생성됨.
+//    격자 13,052개 → DOM 노드 13k+ 개. 줌/팬 시 브라우저 리플로우 부담이 커
+//    프레임 드랍이 발생.
+//  · 변경 후(Canvas): 모든 폴리곤을 단일 <canvas> 에 픽셀로 그림. DOM 노드가
+//    사실상 1개로 줄어 줌/팬 재렌더가 훨씬 가벼움.
+//  · hover 툴팁·범례 하이라이트(setStyle)는 Canvas 렌더러에서도 그대로 동작.
+const canvasRenderer = L.canvas({ padding: 0.5 });
+const map = L.map("map", { renderer: canvasRenderer });
 
 // CARTO Positron 베이스맵
 L.tileLayer(
