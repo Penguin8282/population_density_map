@@ -42,6 +42,7 @@ function dongKey(p) {
 //  · hover 툴팁·범례 하이라이트(setStyle)는 Canvas 렌더러에서도 그대로 동작.
 const canvasRenderer = L.canvas({ padding: 0.5 });
 const map = L.map("map", { renderer: canvasRenderer });
+window.__map = map; // 디버그/자동화 편의용 핸들
 
 // CARTO Positron 베이스맵
 L.tileLayer(
@@ -222,6 +223,63 @@ function buildSearch() {
   });
 }
 
+// ---- 레이어 오버레이 구조 (작업 6) ---------------------------------------
+// 향후 500m 격자 적합성 분류(하드배제/리뷰/적격) 레이어를 얹기 위한 준비.
+// 카테고리형 색상 매핑 함수 + 더미 데이터로 레이어 컨트롤 동작 검증.
+const CATEGORY_COLORS = {
+  "하드배제": "#d73027", // 빨강 — 개발 불가
+  "리뷰": "#fee08b",     // 노랑 — 검토 필요
+  "적격": "#1a9850",     // 초록 — 적합
+};
+function categoryColor(category) {
+  return CATEGORY_COLORS[category] || "#999999";
+}
+
+// 실데이터 연결 전 구조 검증용 더미 500m 격자 (서울 도심 부근 3×3)
+function makeDummySuitability() {
+  const cx = 127.0, cy = 37.555, d = 0.0055; // ≈ 500m
+  const cats = Object.keys(CATEGORY_COLORS);
+  const features = [];
+  for (let i = 0; i < 3; i++) {
+    for (let j = 0; j < 3; j++) {
+      const x = cx + i * d, y = cy + j * d;
+      features.push({
+        type: "Feature",
+        properties: { category: cats[(i * 3 + j) % cats.length], note: "더미" },
+        geometry: { type: "Polygon", coordinates: [[[x, y], [x + d, y], [x + d, y + d], [x, y + d], [x, y]]] },
+      });
+    }
+  }
+  return { type: "FeatureCollection", features };
+}
+
+// 카테고리형 GeoJSON 레이어 생성 (실데이터도 동일 함수로 스타일링 가능)
+function makeCategoryLayer(geojson) {
+  return L.geoJSON(geojson, {
+    style: (f) => ({
+      fillColor: categoryColor(f.properties.category),
+      color: "#333",
+      weight: 0.6,
+      fillOpacity: 0.55,
+    }),
+    onEachFeature: (f, l) =>
+      l.bindTooltip(`적합성: <b>${f.properties.category}</b> (더미)`, { sticky: true }),
+  });
+}
+
+function setupLayerControl() {
+  const suitabilityLayer = makeCategoryLayer(makeDummySuitability());
+  // 기본은 인구밀도만 표시, 적합성 레이어는 체크박스로 on/off
+  L.control.layers(
+    null,
+    {
+      "인구밀도 1km 격자": state.gridLayer,
+      "적합성 분류 500m (더미)": suitabilityLayer,
+    },
+    { position: "bottomleft", collapsed: false }
+  ).addTo(map);
+}
+
 // ---- 색상 분류 방식 토글 (작업 5) ----------------------------------------
 function buildClassToggle() {
   const buttons = document.querySelectorAll("#class-toggle button[data-method]");
@@ -310,6 +368,7 @@ fetch(DATA_URL)
     buildSearch();
     buildRangeFilter();
     buildClassToggle();
+    setupLayerControl();
   })
   .catch((err) => {
     console.error("데이터 로드 실패:", err);
