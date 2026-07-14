@@ -7,3 +7,7 @@ pandas>=2.0
 # 시각화 (scripts/plot_density.py 용)
 matplotlib>=3.7
 mapclassify>=2.5
+
+# 인터랙티브 웹 지도 (scripts/make_interactive_map.py 용)
+folium>=0.16
+branca>=0.7
