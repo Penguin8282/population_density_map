@@ -8,6 +8,7 @@ on:
     paths:
       - "src/**"
       - "scripts/**"
+      - "web/**"
       - "data/raw/**"
       - "requirements.txt"
       - ".github/workflows/build.yml"
