@@ -175,9 +175,12 @@ function addLegendRow(box, cls, color, label) {
 function buildLegend() {
   const box = document.getElementById("legend-items");
   box.innerHTML = "";
-  // 위에서부터 높은 밀도 → 낮은 밀도
+  // 위에서부터 높은 밀도 → 낮은 밀도. 최상위 구간은 상한 없이 'N 이상'으로 개방.
   for (let i = K - 1; i >= 0; i--) {
-    addLegendRow(box, i, COLORS[i], `${fmt(state.breaks[i])} – ${fmt(state.breaks[i + 1])}`);
+    const label = i === K - 1
+      ? `${fmt(state.breaks[i])} 이상`
+      : `${fmt(state.breaks[i])} – ${fmt(state.breaks[i + 1])}`;
+    addLegendRow(box, i, COLORS[i], label);
   }
   addLegendRow(box, -1, NODATA_COLOR, "통계없음");
   markActiveLegend();
@@ -280,23 +283,15 @@ function setupLayerControl() {
   ).addTo(map);
 }
 
-// ---- 색상 분류 방식 토글 (작업 5) ----------------------------------------
-function buildClassToggle() {
-  const buttons = document.querySelectorAll("#class-toggle button[data-method]");
-  buttons.forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const method = btn.dataset.method;
-      if (method === state.method) return;
-      state.method = method;
-      state.breaks = computeBreaks(method, state.densities, K);
-      state.activeClass = null; // 경계가 바뀌므로 범례 필터 해제
-      buttons.forEach((b) => b.classList.toggle("active", b === btn));
-      buildLegend();                        // 범례 갱신
-      state.gridLayer.setStyle(gridStyle);  // 격자 색상 갱신
-      console.log(`분류=${method} 경계:`, state.breaks.map((b) => Math.round(b)));
-    });
-  });
-}
+// ---- 지도 설명 패널 토글 -------------------------------------------------
+(function setupInfoPanel() {
+  const btn = document.getElementById("info-btn");
+  const panel = document.getElementById("info-panel");
+  const close = document.getElementById("info-close");
+  if (!btn || !panel) return;
+  btn.addEventListener("click", () => { panel.hidden = !panel.hidden; });
+  if (close) close.addEventListener("click", () => { panel.hidden = true; });
+})();
 
 // ---- 밀도 범위 필터 (작업 4 · 네이티브 이중 슬라이더) --------------------
 function buildRangeFilter() {
@@ -370,7 +365,6 @@ fetch(DATA_URL)
     buildLegend();
     buildSearch();
     buildRangeFilter();
-    buildClassToggle();
     setupLayerControl();
   })
   .catch((err) => {
