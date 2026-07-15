@@ -100,6 +100,75 @@ html, body {
   font-variant-numeric: tabular-nums;
 }
 
+/* 분류 라벨 (토글 제거 후 단일 표기) */
+#class-label {
+  font-size: 11px;
+  color: #777;
+  margin-bottom: 8px;
+}
+
+/* 지도 설명 버튼 + 패널 */
+#info-btn {
+  position: absolute;
+  bottom: 26px;
+  right: 10px;
+  z-index: 1000;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 13px;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+#info-btn:hover {
+  background: #eef2f7;
+}
+#info-panel {
+  bottom: 62px;
+  right: 10px;
+  max-width: 300px;
+  max-height: 66vh;
+  overflow-y: auto;
+}
+#info-panel .info-close {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 14px;
+  color: #888;
+}
+.info-desc {
+  font-size: 12px;
+  line-height: 1.6;
+  margin: 4px 0 8px;
+  color: #333;
+}
+.info-sub {
+  font-weight: 700;
+  font-size: 12px;
+  margin-top: 6px;
+}
+.info-list {
+  margin: 6px 0;
+  padding-left: 18px;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.info-list li {
+  margin-bottom: 3px;
+}
+.info-foot {
+  margin-top: 8px;
+  font-size: 11px;
+  color: #888;
+  border-top: 1px solid #eee;
+  padding-top: 6px;
+}
+
 /* 색상 분류 방식 토글 */
 #class-toggle {
   display: flex;

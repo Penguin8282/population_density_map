@@ -15,6 +15,28 @@
 <body>
   <div id="map"></div>
 
+  <!-- 지도 설명 토글 버튼 + 패널 -->
+  <button id="info-btn" type="button" title="지도 설명">ℹ️ 설명</button>
+  <div id="info-panel" class="panel" hidden>
+    <button id="info-close" type="button" title="닫기">✕</button>
+    <div class="panel-title">수도권 1km 격자 인구밀도 지도</div>
+    <p class="info-desc">
+      통계청 <b>국토통계지도</b> 1km 격자 인구(2024.10)를 기반으로,
+      서울·인천·경기 <b>13,052개 격자</b>의 인구밀도(명/㎢)를 보여줍니다.
+      색상이 진할수록 인구밀도가 높으며, <b>등간격 7단계</b>로 분류하고
+      최상위 구간은 상한 없이 <b>‘이상’</b>으로 열어두었습니다.
+    </p>
+    <div class="info-sub">사용법</div>
+    <ul class="info-list">
+      <li>격자에 <b>마우스 올림/탭</b> → 시도·시군구·읍면동·인구·밀도</li>
+      <li><b>범례 구간 클릭</b> → 해당 밀도 구간 격자만 강조(재클릭 해제)</li>
+      <li><b>좌상단 검색</b> → 읍면동으로 이동·강조</li>
+      <li><b>밀도 범위 슬라이더</b> → 특정 밀도 범위만 표시</li>
+      <li><b>좌하단 레이어</b> → 레이어 켜고 끄기</li>
+    </ul>
+    <div class="info-foot">좌표계 EPSG:5179(UTM-K) · 경계 밖/해상 격자는 ‘통계없음’</div>
+  </div>
+
   <!-- 읍면동 검색 (좌상단) -->
   <div id="search-panel" class="panel">
     <div class="panel-title">읍면동 검색</div>
@@ -27,17 +49,7 @@
   <!-- 범례 (작업 1에서 클릭 필터 추가) -->
   <div id="legend" class="panel" aria-label="인구밀도 범례">
     <div class="panel-title">인구밀도 (명/㎢)</div>
-
-    <!-- 색상 분류 방식 토글 (작업 5) -->
-    <div id="class-toggle">
-      <button type="button" data-method="quantile"
-              title="분위수: 각 구간에 들어가는 격자 수가 비슷하도록 경계를 나눔">분위수</button>
-      <button type="button" data-method="equal" class="active"
-              title="등간격(선형): 밀도 범위(최소~최대)를 같은 폭으로 나눔">등간격</button>
-      <button type="button" data-method="log"
-              title="로그: 로그 스케일로 나눔 — 값이 한쪽에 몰린 데이터에 적합">로그</button>
-      <span class="info-icon" tabindex="0" title="분위수 · 각 구간 격자 수가 비슷하게 나뉨&#10;등간격 · 밀도 범위를 균등한 폭으로 나눔&#10;로그 · 로그 스케일(편중 데이터에 적합)">?</span>
-    </div>
+    <div id="class-label">밀도수 · 등간격 7단계</div>
 
     <div id="legend-items"></div>
     <div class="panel-hint">구간 클릭 → 해당 격자만 강조</div>
