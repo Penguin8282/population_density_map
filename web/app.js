@@ -23,7 +23,7 @@ const state = {
   selectedDong: null, // 검색으로 선택된 읍면동 키
   dongBounds: {},   // 읍면동 키 → L.latLngBounds (검색 flyTo 용)
   densityRange: null, // [lo, hi] 밀도 범위 필터 (null=전체)
-  method: "quantile", // 색상 분류 방식: quantile | equal | log
+  method: "equal", // 색상 분류 방식: quantile | equal(선형·기본) | log
   densities: [],      // 결측 제외 밀도 값 배열
 };
 
@@ -346,7 +346,7 @@ fetch(DATA_URL)
       .map((f) => f.properties.density)
       .filter((d) => d !== null && d !== undefined && !Number.isNaN(d));
     state.breaks = computeBreaks(state.method, state.densities, K);
-    console.log("초기 경계(분위수):", state.breaks.map((b) => Math.round(b)));
+    console.log(`초기 경계(${state.method}):`, state.breaks.map((b) => Math.round(b)));
 
     state.gridLayer = L.geoJSON(geojson, {
       style: gridStyle,
